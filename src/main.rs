@@ -1,33 +1,39 @@
-use directories::ProjectDirs;
-use std::{io::stdin, collections::HashMap};
+use ron::de::from_reader;
+use std::{io::stdin, collections::HashMap, fs::File};
+use serde::{Deserialize, Serialize};
 
+#[derive(Debug, Deserialize, Serialize)]
 struct Node {
     id: i32,
     address: String,
     message: String,
 }
 
-fn get_project_directory() -> String {
-    // Lin: /home/username/.config/initiativetracker"
-    // Win: C:\Users\Username\AppData\Roaming\Nex-Verse\Initiative Tracker\config
-    // Mac: /Users/username/Library/Application Support/com.Nex-Verse.Initiative-Tracker
-    let proj_dirs = ProjectDirs::from("com", "Nex-Verse", "Initiative Tracker");
-    proj_dirs.unwrap().config_dir().display().to_string()
+#[derive(Debug, Deserialize, Serialize)]
+struct GameStructure {
+    nodes: HashMap<String, Node>,
 }
 
 fn main() {
-    let mut game_nodes = HashMap::new();
 
-    for node in nodes {
-        game_nodes.insert(node.unwrap().address, node.unwrap());
-    }
+    let input_path = format!("{}/assets/input.ron", env!("CARGO_MANIFEST_DIR"));
+    let f = File::open(&input_path).expect("Failed opening file");
+    let config: GameStructure = match from_reader(f) {
+        Ok(x) => x,
+        Err(e) => {
+            println!("Failed to load config: {}", e);
 
+            std::process::exit(1);
+        }
+    };
 
-    println!("Gane Name");
-    let mut new_game = String::new();
-    stdin()
-        .read_line(&mut new_game)
-        .expect("Failed to read line");
+    println!("Config: {:?}", &config.nodes["1.1.1.2"].message);
+
+    // println!("Gane Name");
+    // let mut new_game = String::new();
+    // stdin()
+    //     .read_line(&mut new_game)
+    //     .expect("Failed to read line");
 }
 
 #[cfg(test)]
